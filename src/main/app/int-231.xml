@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8090" doc:name="HTTP Listener Configuration"/>
+    <flow name="int-231Flow">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/SFA" doc:name="HTTP"/>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+        <choice doc:name="Choice">
+            <when expression="payload == null">
+                <set-payload value="&lt;SFAResponse&gt;
+	&lt;message&gt;
+		Json Data is not valid.
+	&lt;/message&gt;
+&lt;/SFAResponse&gt;" doc:name="Set Payload" mimeType="application/xml"/>
+            </when>
+            <otherwise>
+                <dw:transform-message metadata:id="d70d7a5a-c115-4ccc-a0aa-3270310a53e6" doc:name="Transform Message">
+                    <dw:input-payload doc:sample="sample_data\json_1.json" mimeType="application/java"/>
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+---
+{
+}]]></dw:set-payload>
+                </dw:transform-message>
+                <json:json-to-xml-transformer doc:name="JSON to XML"/>
+            </otherwise>
+        </choice>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>    </flow>
+</mule>
